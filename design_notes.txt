@@ -1,0 +1,13 @@
+
+Implementation A:
+1. Rule-Based Flat Monte Carlo, if no rule-based move available, then
+2. Alpha-beta (copying Ninuki-AB.py ) with timelimit, if reaches timelimit:
+3. Random move
+
+
+Implementation B:
+Monte Carlo Tree Search with UCT (Go5, performs better than Go3 only if enough time is given)
+
+Implementation C:
+Alpha-Zero
+
