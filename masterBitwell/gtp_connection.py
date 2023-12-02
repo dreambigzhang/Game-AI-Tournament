@@ -14,6 +14,8 @@ import re
 import time
 from sys import stdin, stdout, stderr
 from typing import Any, Callable, Dict, List, Tuple
+from flat_monte_carlo import SimulationPlayer
+
 
 from board_base import (
     BLACK,
@@ -359,9 +361,21 @@ class GtpConnection:
         """ 
         Modify this function for Assignment 2.
         """
-
+        
         board_color = args[0].lower()
-        self.play_cmd([board_color, self.engine.get_move(self.board, board_color), 'print_move'])
+        color = color_to_int(board_color)
+
+        result1 = self.board.detect_five_in_a_row()
+        result2 = EMPTY
+        if self.board.get_captures(opponent(color)) >= 10:
+            result2 = opponent(color)
+        if result1 == opponent(color) or result2 == opponent(color):
+            self.respond("resign")
+            return
+        move = SimulationPlayer().genmove(self.board, color, 'rule_based')
+
+        self.play_cmd([board_color, move, 'print_move'])
+
     
     def timelimit_cmd(self, args: List[str]) -> None:
         """ Implement this function for Assignment 2 """
