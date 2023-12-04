@@ -31,9 +31,8 @@ class PolicyPlayer(object):
         blockWinMoves = scanBlockWin2(board, color, board_size)
         openFourMoves = scanOpenFour2(board, color, board_size)
         captureMoves = scanCapture2(board, color, board_size)
-        captureMoves = list(set(captureMoves).difference(set(winMoves).union(set(blockWinMoves))))
         all_policy_moves = winMoves + blockWinMoves + openFourMoves + captureMoves
-        return all_policy_moves
+        return list(dict.fromkeys(all_policy_moves))
     
     def get_policy_moves(self, board: GoBoard, color: GO_COLOR):
         board_size = board.size

@@ -14,6 +14,7 @@ from engine import GoEngine
 import time
 import random
 from flat_monte_carlo import SimulationPlayer
+from policy_player import PolicyPlayer
 
 from board_base import (
     BLACK,
@@ -76,13 +77,18 @@ class ABPlayer(GoEngine):
             return 0, False, False
 
         any_unsolved = False
-        moves = GoBoardUtil.generate_legal_moves(self.board, self.board.current_player)
+        # implement move ordering with policyMoves
+        #moves = GoBoardUtil.generate_legal_moves(self.board, self.board.current_player)
+        policy_moves = PolicyPlayer().get_all_policy_moves(self.board, self.board.current_player)
 
-        # Can implement move ordering with scanPolicyMoves
+        moves = list(self.board.get_empty_points())
         if depth == 0:
             random.shuffle(moves)
 
-
+        if len(policy_moves) > 0:
+            moves = policy_moves + list(set(moves).difference(set(policy_moves)))
+            #log_to_file(str(moves)+'\n')
+        
         for move in moves:
             self.board.play_move(move, self.board.current_player)
             
@@ -120,7 +126,7 @@ class ABPlayer(GoEngine):
 
         solved = False
         timeout = False
-        self.max_depth = 5
+        self.max_depth = 1
         while not solved and not timeout:
             result, solved, timeout = self.alpha_beta(-1, 1, 0)
             self.max_depth += 1
@@ -159,4 +165,7 @@ def log_to_file(content: str) -> None:
         file.write(content)
 
 if __name__ == "__main__":
-    run()
+    try:
+        run()
+    except Exception as e:
+        log_to_file('Error: '+ str(e) + '\n')
