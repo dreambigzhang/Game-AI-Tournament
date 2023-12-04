@@ -38,17 +38,25 @@ class ABPlayer(GoEngine):
         self.time_limit = 1
 
     def get_move(self, board: GoBoard, color: GO_COLOR) -> GO_POINT:
+        
+        start_time = time.time()
+        
         if board.get_empty_points().size == 0:
             return "pass"
         if color == 'w':
             board.current_player = WHITE
         else:
             board.current_player = BLACK
+        
         MonteCarloMove = SimulationPlayer().genmove(board, board.current_player)
+        timeStamp1 = time.time()
+        log_to_file('MonteCarlo took: '+str(timeStamp1-start_time) + '\n')
         if MonteCarloMove != None:
             return format_point(point_to_coord(MonteCarloMove, self.board.size)).lower()
         else:
             winner, move = self.solve_board(board)
+            timeStamp2 = time.time()
+            log_to_file('Alphabeta took:'+ str(timeStamp2-timeStamp1) + '\n')
             return format_point(point_to_coord(self.best_move, self.board.size)).lower()
 
     def alpha_beta(self, alpha, beta, depth):
@@ -69,8 +77,11 @@ class ABPlayer(GoEngine):
 
         any_unsolved = False
         moves = GoBoardUtil.generate_legal_moves(self.board, self.board.current_player)
+
+        # Can implement move ordering with scanPolicyMoves
         if depth == 0:
             random.shuffle(moves)
+
 
         for move in moves:
             self.board.play_move(move, self.board.current_player)
@@ -109,7 +120,7 @@ class ABPlayer(GoEngine):
 
         solved = False
         timeout = False
-        self.max_depth = 1
+        self.max_depth = 5
         while not solved and not timeout:
             result, solved, timeout = self.alpha_beta(-1, 1, 0)
             self.max_depth += 1
@@ -140,6 +151,12 @@ def run() -> None:
     con: GtpConnection = GtpConnection(ABPlayer(), board)
     con.start_connection()
 
+def log_to_file(content: str) -> None:
+    # Open the file in append mode ('a')
+    file_path = 'profiling.txt'
+    with open(file_path, 'a') as file:
+        # Write content to the file
+        file.write(content)
 
 if __name__ == "__main__":
     run()
