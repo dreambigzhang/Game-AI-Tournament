@@ -34,21 +34,12 @@ class SimulationPlayer(object):
         if policy == 'Random':
             return None
         legal_moves = [coord_to_point(move_to_coord(move, board.size)[0], move_to_coord(move, board.size)[1], board.size) for move in policy_moves]
-        
-        numMoves = len(legal_moves)
-        if numMoves == 0:
+        if len(legal_moves) == 0:
             print('No legal moves left. Yield')
             return 'Yield'
-            
         
         # Simulate each legal move and assign a value
         score = [0] * len(legal_moves)
-
-        if numMoves == 49:
-            bestIndex = 36
-            best = legal_moves[bestIndex]
-            return best
-
         for i in range(len(legal_moves)):
             move = legal_moves[i]
             #print(format_point(point_to_coord(move, board.size)))
