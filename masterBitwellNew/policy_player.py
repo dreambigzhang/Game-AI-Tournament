@@ -50,103 +50,12 @@ class PolicyPlayer(object):
             return 'Capture', captureMoves
         return 'Random', scanRandom(board, color, board_size)
 
-    def scanWin(self, board: GoBoard, color, board_size):
-        # scan for win moves
-        winMoves = set()
-        for point in board.get_empty_points():
-            for noc in board.neighbors_of_color(point, color):
-                direction = noc - point
-                pos_direction_count = 1
-                try:
-                    for i in range(2, 5):
-                        if board.get_color(point+direction*i) == color:
-                            pos_direction_count += 1
-                        else:
-                            raise Exception
-                except:
-                    pass
-                neg_direction_count = 1
-                try:
-                    for i in range(1, 5):
-                        if board.get_color(point-direction*i) == color:
-
-                            neg_direction_count += 1
-                        else:
-                            raise Exception
-                except:
-                    pass
-                if pos_direction_count + neg_direction_count >= 5:
-                    isWinMove = True
-                else:
-                    isWinMove = False
-                if isWinMove:
-                    winMoves.add(format_point(point_to_coord(point,board_size)).lower())
-        if board.get_captures(color)>=8:
-            captureMoves = scanCapture(board, color, board_size)
-            winMoves = winMoves.union(captureMoves)
-        OpenFourForceWinMoves = OpenFourForceWin(board, color, board_size)
-        winMoves = winMoves.union(set(OpenFourForceWinMoves))
-        return list(winMoves)
-
-    def scanBlockWin(self, board: GoBoard, color, board_size):
-        # scan for block win moves
-        blockWinMoves = set()
-        for point in board.get_empty_points():
-            for noc in board.neighbors_of_color(point, opponent(color)):
-                direction = noc - point
-                pos_direction_count = 1
-                try:
-                    for i in range(2, 5):
-                        if board.get_color(point+direction*i) == opponent(color):
-                            pos_direction_count += 1
-                        else:
-                            raise Exception
-                except:
-                    pass
-                neg_direction_count = 1
-                try:
-                    for i in range(1, 5):
-                        if board.get_color(point-direction*i) == opponent(color):
-                            neg_direction_count += 1
-                        else:
-                            raise Exception
-                except:
-                    pass
-                if pos_direction_count + neg_direction_count >= 5:
-                    isBlockWinMove = True
-                else:    
-                    isBlockWinMove = False
-
-                if isBlockWinMove:
-                    blockWinMoves.add(format_point(point_to_coord(point,board_size)).lower())
-        #print(blockWinMoves)
-        # now scan open fours for the oppoenent and look for moves that capture them
-        # make sure the fours are open fours not just any fours
-        opponentOpenFour = board.getConsecutiveFours(opponent(color))
-        #print(opponentOpenFour)
-        captureOpenFourMoves = set()
-        for point in board.get_empty_points():
-            for noc in board.neighbors_of_color(point, opponent(color)):
-                isCaptureOpenFourMove = True
-                direction = noc - point
-                try:
-                    if not (board.get_color(point+direction*2) == opponent(color) and board.get_color(point+direction*3) == color):
-                        raise Exception
-                    #print("Black Capture Count", board.get_captures(color))
-                    #print("White Capture Count", board.get_captures(WHITE))
-                    #print("current player", color)
-                    if not (noc in opponentOpenFour or noc + direction in opponentOpenFour):
-                        raise Exception
-                except:
-                    isCaptureOpenFourMove = False
-
-                if isCaptureOpenFourMove:
-                    captureOpenFourMoves.add(format_point(point_to_coord(point,board_size)).lower())
-        if board.get_captures(opponent(color))>=8:
-            captureMoves = scanCapture(board, opponent(color), board_size)
-            blockWinMoves = blockWinMoves.union(captureMoves)
-        blockOppOpenFourForceWin = OpenFourForceWin(board, opponent(color), board_size)
-        return list(blockWinMoves.union(captureOpenFourMoves).union(blockOppOpenFourForceWin))
+    def urgentMove(self, board: GoBoard, color: GO_COLOR):
+        # check if there's a move that will win the game or block the opponent from winning
+        if len(scanWin(board, color, board.size)) > 0 or len(scanBlockWin(board, color, board.size)) > 0:
+            return True
+        else:
+            return False
 
 
 def scanWin(board: GoBoard, color, board_size):

@@ -30,10 +30,10 @@ class SimulationPlayer(object):
         '''
         # Get all legal moves and put it into a list 
 
-        policy, policy_moves =  PolicyPlayer().get_policy_moves(board, player)
-        if policy == 'Random':
+        policy_moves = PolicyPlayer().get_all_policy_moves(board, player)
+        if len(policy_moves) == 0:
             return None
-        legal_moves = [coord_to_point(move_to_coord(move, board.size)[0], move_to_coord(move, board.size)[1], board.size) for move in policy_moves]
+        legal_moves = policy_moves
         if len(legal_moves) == 0:
             print('No legal moves left. Yield')
             return 'Yield'
