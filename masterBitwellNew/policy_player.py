@@ -49,7 +49,45 @@ class PolicyPlayer(object):
         if len(captureMoves) > 0:
             return 'Capture', captureMoves
         return 'Random', scanRandom(board, color, board_size)
-    
+
+    def scanWin(self, board: GoBoard, color, board_size):
+        # scan for win moves
+        winMoves = set()
+        for point in board.get_empty_points():
+            for noc in board.neighbors_of_color(point, color):
+                direction = noc - point
+                pos_direction_count = 1
+                try:
+                    for i in range(2, 5):
+                        if board.get_color(point+direction*i) == color:
+                            pos_direction_count += 1
+                        else:
+                            raise Exception
+                except:
+                    pass
+                neg_direction_count = 1
+                try:
+                    for i in range(1, 5):
+                        if board.get_color(point-direction*i) == color:
+
+                            neg_direction_count += 1
+                        else:
+                            raise Exception
+                except:
+                    pass
+                if pos_direction_count + neg_direction_count >= 5:
+                    isWinMove = True
+                else:
+                    isWinMove = False
+                if isWinMove:
+                    winMoves.add(format_point(point_to_coord(point,board_size)).lower())
+        if board.get_captures(color)>=8:
+            captureMoves = scanCapture(board, color, board_size)
+            winMoves = winMoves.union(captureMoves)
+        OpenFourForceWinMoves = OpenFourForceWin(board, color, board_size)
+        winMoves = winMoves.union(set(OpenFourForceWinMoves))
+        return list(winMoves)
+
     def scanBlockWin(self, board: GoBoard, color, board_size):
         # scan for block win moves
         blockWinMoves = set()
@@ -107,7 +145,9 @@ class PolicyPlayer(object):
         if board.get_captures(opponent(color))>=8:
             captureMoves = scanCapture(board, opponent(color), board_size)
             blockWinMoves = blockWinMoves.union(captureMoves)
-        return list(blockWinMoves.union(captureOpenFourMoves))
+        blockOppOpenFourForceWin = OpenFourForceWin(board, opponent(color), board_size)
+        return list(blockWinMoves.union(captureOpenFourMoves).union(blockOppOpenFourForceWin))
+
 
 def scanWin(board: GoBoard, color, board_size):
     # scan for win moves
@@ -143,6 +183,8 @@ def scanWin(board: GoBoard, color, board_size):
     if board.get_captures(color)>=8:
         captureMoves = scanCapture(board, color, board_size)
         winMoves = winMoves.union(captureMoves)
+    OpenFourForceWinMoves = OpenFourForceWin(board, color, board_size)
+    winMoves = winMoves.union(set(OpenFourForceWinMoves))
     return list(winMoves)
 
 def scanWin2(board: GoBoard, color, board_size):
@@ -179,6 +221,8 @@ def scanWin2(board: GoBoard, color, board_size):
     if board.get_captures(color)>=8:
         captureMoves = scanCapture2(board, color, board_size)
         winMoves = winMoves.union(captureMoves)
+    OpenFourForceWinMoves = OpenFourForceWin2(board, color, board_size)
+    winMoves = winMoves.union(OpenFourForceWinMoves)
     return list(winMoves)
     
 def scanBlockWin(board: GoBoard, color, board_size):
@@ -238,7 +282,8 @@ def scanBlockWin(board: GoBoard, color, board_size):
     if board.get_captures(opponent(color))>=8:
         captureMoves = scanCapture(board, opponent(color), board_size)
         blockWinMoves = blockWinMoves.union(captureMoves)
-    return list(blockWinMoves.union(captureOpenFourMoves))
+    blockOppOpenFourForceWin = OpenFourForceWin(board, opponent(color), board_size)
+    return list(blockWinMoves.union(captureOpenFourMoves).union(blockOppOpenFourForceWin))
 
 def scanBlockWin2(board: GoBoard, color, board_size):
     # scan for block win moves
@@ -297,7 +342,84 @@ def scanBlockWin2(board: GoBoard, color, board_size):
     if board.get_captures(opponent(color))>=8:
         captureMoves = scanCapture2(board, opponent(color), board_size)
         blockWinMoves = blockWinMoves.union(captureMoves)
-    return list(blockWinMoves.union(captureOpenFourMoves))
+
+    blockOppOpenFourForceWin = OpenFourForceWin2(board, opponent(color), board_size)
+    return list(blockWinMoves.union(captureOpenFourMoves).union(blockOppOpenFourForceWin))
+
+def OpenFourForceWin(board: GoBoard, color: GO_COLOR, board_size):
+    # scan for open Four Force Win moves
+    openFourForceWinMoves = set()
+    for point in board.get_empty_points():
+        for noc in board.neighbors_of_color(point, color):
+            direction = noc - point
+            pos_direction_count = 1
+            try:
+                for i in range(2, 5):
+                    if board.get_color(point+direction*i) == color:
+                        pos_direction_count += 1
+                    else:
+                        raise Exception
+            except:
+                pass
+            neg_direction_count = 1
+            try:
+                for i in range(1, 5):
+                    if board.get_color(point-direction*i) == color:
+
+                        neg_direction_count += 1
+                    else:
+                        raise Exception
+            except:
+                pass
+            try:
+                if pos_direction_count + neg_direction_count == 4 and board.get_color(point+direction*(pos_direction_count+1)) == EMPTY and board.get_color(point-direction*neg_direction_count) == EMPTY:
+                    isOpenFourForceWinMove = True
+                else:
+                    isOpenFourForceWinMove = False
+            except:
+                isOpenFourForceWinMove = False
+
+            if isOpenFourForceWinMove:
+                openFourForceWinMoves.add(format_point(point_to_coord(point,board_size)).lower())
+    return list(openFourForceWinMoves)
+
+def OpenFourForceWin2(board: GoBoard, color: GO_COLOR, board_size):
+    # scan for open Four Force Win moves
+    openFourForceWinMoves = set()
+    for point in board.get_empty_points():
+        for noc in board.neighbors_of_color(point, color):
+            direction = noc - point
+            pos_direction_count = 1
+            try:
+                for i in range(2, 5):
+                    if board.get_color(point+direction*i) == color:
+                        pos_direction_count += 1
+                    else:
+                        raise Exception
+            except:
+                pass
+            neg_direction_count = 1
+            try:
+                for i in range(2, 5):
+                    if board.get_color(point-direction*i) == color:
+
+                        neg_direction_count += 1
+                    else:
+                        raise Exception
+            except:
+                pass
+            try:
+                if pos_direction_count + neg_direction_count == 4 and board.get_color(point+direction*(pos_direction_count+1)) == EMPTY and board.get_color(point-direction*neg_direction_count) == EMPTY:
+                    isOpenFourForceWinMove = True
+                else:
+                    isOpenFourForceWinMove = False
+            except:
+                isOpenFourForceWinMove = False
+
+            if isOpenFourForceWinMove:
+                openFourForceWinMoves.add(point)
+    return openFourForceWinMoves
+
 
 def scanOpenFour(board: GoBoard, color, board_size):
     # scan for open four moves

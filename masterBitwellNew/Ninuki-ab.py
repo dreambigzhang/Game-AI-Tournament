@@ -56,17 +56,21 @@ class ABPlayer(GoEngine):
         strongOpeningMove = self.strongOpening(board, board.current_player)
         if strongOpeningMove != None:
             log_to_file('Strong opening move: '+strongOpeningMove+'\n')
+            print('Strong opening move: '+strongOpeningMove)
             return strongOpeningMove
 
         MonteCarloMove = SimulationPlayer().genmove(board, board.current_player)
         timeStamp1 = time.time()
-        log_to_file('MonteCarlo took: '+str(timeStamp1-start_time) + '\n')
+        #log_to_file('MonteCarlo took: '+str(timeStamp1-start_time) + '\n')
+
         if MonteCarloMove != None:
+            log_to_file("MonteCarloMove: "+format_point(point_to_coord(MonteCarloMove, board.size)).lower()+ '\n')
             return format_point(point_to_coord(MonteCarloMove, board.size)).lower()
         else:
             winner, move = self.solve_board(board)
             timeStamp2 = time.time()
-            log_to_file('Alphabeta took:'+ str(timeStamp2-timeStamp1) + '\n')
+            log_to_file("AlphabetaMove\n")
+            #log_to_file('Alphabeta took:'+ str(timeStamp2-timeStamp1) + '\n')
             return format_point(point_to_coord(self.best_move, board.size)).lower()
 
     def alpha_beta(self, alpha, beta, depth):
@@ -162,27 +166,8 @@ class ABPlayer(GoEngine):
         self.time_limit = time_limit
 
     def strongOpening(self, board: GoBoard, color: GO_COLOR):
-        '''
-        if board.get_empty_points().size >= 48:
-
-            if board.get_color(move_to_point('d4', board.size)) == EMPTY:
-                return 'd4'
-            else:
-                return 'd3'
-        if board.get_empty_points().size >= 46:
-            if board.get_color(move_to_point('d4', board.size)) == color:
-                first_point = move_to_point('d4', board.size)
-            else:
-                first_point = move_to_point('d3', board.size)
-            for nb in board.neighbors_of_color(first_point, EMPTY):
-                direction = first_point - nb
-                if board.get_color(nb - direction) != opponent(color) and board.get_color(first_point+direction) != opponent(color):
-                    return format_point(point_to_coord(nb, board.size)).lower()
-        if board.get_empty_points().size >= 44:
-            b
-        '''
-        strongSquence = ['d4', 'd3', 'd5', 'd2', 'd6', 'c4', 'e4', 'c3', 'e5', 'c5', 'e3']
-        if len(PolicyPlayer().scanBlockWin(board, color, board.size)) > 0:
+        strongSquence = ['d4', 'd3', 'd5', 'c4', 'e4', 'c3', 'e5', 'c5', 'e3']
+        if len(PolicyPlayer().scanWin(board, color, board.size))> 0 or len(PolicyPlayer().scanBlockWin(board, color, board.size)) > 0:
             return None
         if board.get_empty_points().size >= 35:
             for i in range(len(strongSquence)):
