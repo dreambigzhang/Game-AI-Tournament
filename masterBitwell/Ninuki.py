@@ -57,6 +57,7 @@ class ABPlayer(GoEngine):
         if strongOpeningMove != None:
             log_to_file('Strong opening move: '+strongOpeningMove+'\n')
             print('Strong opening move: '+strongOpeningMove)
+            assert(board.get_color(move_to_point(strongOpeningMove, board.size)) == EMPTY)
             return strongOpeningMove
 
         MonteCarloMove = SimulationPlayer().genmove(board, board.current_player)
@@ -64,7 +65,9 @@ class ABPlayer(GoEngine):
         #log_to_file('MonteCarlo took: '+str(timeStamp1-start_time) + '\n')
 
         if MonteCarloMove != None:
-            log_to_file("MonteCarloMove: "+format_point(point_to_coord(MonteCarloMove, board.size)).lower()+ '\n')
+            print("MonteCarloMove: "+format_point(point_to_coord(MonteCarloMove, board.size)).lower())
+            log_to_file("MonteCarloMove: "+format_point(point_to_coord(MonteCarloMove, board.size)).lower()+'\n')
+            assert(board.get_color(MonteCarloMove) == EMPTY)
             return format_point(point_to_coord(MonteCarloMove, board.size)).lower()
         else:
             winner, move = self.solve_board(board)
@@ -167,9 +170,9 @@ class ABPlayer(GoEngine):
 
     def strongOpening(self, board: GoBoard, color: GO_COLOR):
         strongSquence = ['d4', 'd3', 'd5', 'c4', 'e4', 'c3', 'e5', 'c5', 'e3']
-        if len(PolicyPlayer().scanWin(board, color, board.size))> 0 or len(PolicyPlayer().scanBlockWin(board, color, board.size)) > 0:
+        if PolicyPlayer().urgentMove(board, color):
             return None
-        if board.get_empty_points().size >= 35:
+        if len(board.get_empty_points()) - board.get_captures(BLACK) - board.get_captures(WHITE)>= 35:
             for i in range(len(strongSquence)):
                 if board.get_color(move_to_point(strongSquence[i], board.size)) == EMPTY:
                     if i >= 2:
@@ -179,9 +182,6 @@ class ABPlayer(GoEngine):
                             continue
                     else:
                         return strongSquence[i]
-            for move in strongSquence:
-                if board.get_color(move_to_point(move, board.size)) == EMPTY:
-                    return move
         return None
             
 def move_to_point(move: str, size: int) -> GO_POINT:
