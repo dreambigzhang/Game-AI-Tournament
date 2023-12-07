@@ -43,7 +43,8 @@ class ABPlayer(GoEngine):
 
     def get_move(self, board: GoBoard, color: str) -> GO_POINT:
         start_time = time.time()
-        
+        if board.isGameOver():
+            return "resign"
         if board.get_empty_points().size == 0:
             return "pass"
         if color == 'w':
