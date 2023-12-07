@@ -1,8 +1,9 @@
 import pexpect
 
 #Change the paths here to test different players
-player1='masterBitwell/Ninuki.py'
-player2='ab_player/Ninuki-ab.py'
+player1='ab_player/Ninuki-ab.py'
+player2='masterBitwell/Ninuki.py'
+
 
 #Change the timeout to test different time limits
 #We will use a 60 second timeout for testing your submission
