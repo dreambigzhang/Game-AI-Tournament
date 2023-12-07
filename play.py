@@ -2,7 +2,7 @@ import pexpect
 
 #Change the paths here to test different players
 player1='ab_player/Ninuki-ab.py'
-player2='masterBitwell/Ninuki-ab.py'
+player2='masterBitwell/Ninuki.py'
 
 
 #Change the timeout to test different time limits
